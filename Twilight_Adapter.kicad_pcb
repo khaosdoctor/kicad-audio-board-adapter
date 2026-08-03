@@ -6769,7 +6769,7 @@
 		(uuid "ecd9470c-d801-42e0-9cd5-75dd0d3f8620")
 		(at 137.5 98)
 		(tags "Resistor")
-		(property "Reference" "10kΩ"
+		(property "Reference" "R1"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.SilkS")
