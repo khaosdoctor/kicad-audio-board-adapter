@@ -5,6 +5,12 @@ jacks, a true-bypass DPDT switch, two DIP switches, a trim potentiometer, an
 LED indicator, test points, and header connectors for interfacing with
 another board.
 
+## Credit
+
+This design is not mine. It was designed by **Akim Kimliuk** (silkscreened on
+the board itself), who gave permission to use it here since he isn't able to
+sell it outside his country. All credit for the original design goes to him.
+
 ## PCB preview
 
 | Top | Bottom |
