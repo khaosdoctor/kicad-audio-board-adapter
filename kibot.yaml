@@ -1,0 +1,174 @@
+# KiBot configuration for the Twilight Adapter project
+# Run with: kibot -e Twilight_Adapter.kicad_sch -b Twilight_Adapter.kicad_pcb
+# Docs: https://github.com/INTI-CMNB/KiBot
+kibot:
+  version: 1
+
+filters:
+  - name: only_jlc_parts
+    comment: 'Only parts with a JLCPCB/LCSC part number'
+    type: generic
+    include_only:
+      - column: LCSC
+        regex: '^C\d+'
+
+groups:
+  - name: fabrication
+    outputs:
+      - gerbers
+      - drill
+  - name: assembly
+    outputs:
+      - position
+      - bom
+      - bom_jlcpcb
+  - name: documentation
+    outputs:
+      - schematic_pdf
+      - pcb_pdf
+      - interactive_bom
+  - name: 3d
+    outputs:
+      - step
+      - render_top
+      - render_bottom
+
+outputs:
+  - name: gerbers
+    comment: 'Gerbers for manufacturing'
+    type: gerber
+    dir: 'Manufacturing/Gerbers'
+    options:
+      exclude_edge_layer: true
+      exclude_pads_from_silkscreen: true
+      plot_sheet_reference: false
+      plot_footprint_refs: true
+      plot_footprint_values: false
+      force_plot_invisible_refs_vals: false
+      tent_vias: true
+      use_protel_extensions: true
+      create_gerber_job_file: true
+      disable_aperture_macros: false
+      use_gerber_x2_attributes: true
+      use_gerber_net_attributes: true
+      gerber_precision: 4.6
+      line_width: 0.1
+      subtract_mask_from_silk: true
+    layers:
+      - copper
+      - F.SilkS
+      - B.SilkS
+      - F.Mask
+      - B.Mask
+      - F.Paste
+      - B.Paste
+      - Edge.Cuts
+
+  - name: drill
+    comment: 'Drill files for manufacturing'
+    type: excellon
+    dir: 'Manufacturing/Gerbers'
+    options:
+      pth_and_npth_single_file: false
+      metric_units: true
+      map: gerber
+
+  - name: position
+    comment: 'Pick and place file'
+    type: position
+    dir: 'Manufacturing/Assembly'
+    options:
+      format: CSV
+      units: millimeters
+      separate_files_for_front_and_back: true
+      only_smd: true
+
+  - name: bom
+    comment: 'Bill of materials (CSV)'
+    type: bom
+    dir: 'Manufacturing/Assembly'
+    options:
+      format: CSV
+      ref_separator: ','
+      columns:
+        - References
+        - Value
+        - Footprint
+        - field: 'Quantity Per PCB'
+          name: Qty
+
+  - name: bom_jlcpcb
+    comment: 'Bill of materials for JLCPCB assembly'
+    type: bom
+    dir: 'Manufacturing/Assembly'
+    run_by_default: false
+    options:
+      output: '%f_jlcpcb.%x'
+      exclude_filter: 'only_jlc_parts'
+      ref_separator: ','
+      columns:
+        - field: Value
+          name: Comment
+        - field: References
+          name: Designator
+        - Footprint
+        - field: LCSC
+          name: 'LCSC Part #'
+
+  - name: schematic_pdf
+    comment: 'Schematic in PDF format'
+    type: pdf_sch_print
+    dir: 'Documentation'
+
+  - name: pcb_pdf
+    comment: 'PCB layers in PDF format'
+    type: pdf_pcb_print
+    dir: 'Documentation'
+    layers:
+      - copper
+      - F.SilkS
+      - B.SilkS
+      - F.Mask
+      - B.Mask
+      - Edge.Cuts
+      - F.Fab
+      - B.Fab
+
+  - name: interactive_bom
+    comment: 'Interactive HTML BOM'
+    type: ibom
+    dir: 'bom'
+    options:
+      output: 'ibom.html'
+
+  - name: step
+    comment: '3D model in STEP format'
+    type: step
+    dir: '3D'
+
+  - name: render_top
+    comment: '3D render, top view'
+    type: render_3d
+    dir: '3D'
+    options:
+      view: top
+      output: 'render_top.png'
+
+  - name: render_bottom
+    comment: '3D render, bottom view'
+    type: render_3d
+    dir: '3D'
+    options:
+      view: bottom
+      output: 'render_bottom.png'
+
+  - name: manufacturing_zip
+    comment: 'Zipped gerbers and drill files ready to send to a fab house'
+    type: compress
+    dir: 'Manufacturing'
+    options:
+      files:
+        - from_output: gerbers
+          dest: /
+        - from_output: drill
+          dest: /

@@ -1,0 +1,39 @@
+name: KiBot
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate outputs with KiBot
+        uses: INTI-CMNB/KiBot@v2_k10
+        with:
+          config: kibot.yaml
+          board: Twilight_Adapter.kicad_pcb
+          schema: Twilight_Adapter.kicad_sch
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: kibot-outputs
+          path: |
+            Manufacturing
+            Documentation
+            bom
+            3D
+
+      - name: Refresh interactive BOM and PCB renders
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: 'chore: refresh interactive BOM and PCB renders [skip ci]'
+          file_pattern: 'bom/* 3D/render_top.png 3D/render_bottom.png'
